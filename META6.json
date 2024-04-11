@@ -1,6 +1,6 @@
 {
-  "name": "Contact::Name::LLM",
-  "description": "use LLM to get first and last",
+  "name": "Contact::Name",
+  "description": "parse contact names",
   "version": "0.0.1",
   "perl": "6.d",
   "authors": [
@@ -11,15 +11,14 @@
   "build-depends": [],
   "test-depends": [],
   "provides": {
-    "Contact::Name::LLM": "lib/Contact/Name/LLM.rakumod"
+    "Contact::Name": "lib/Contact/Name.rakumod"
   },
   "resources": [],
   "license": "Artistic-2.0",
   "tags": [
     "Contact",
-    "Name",
-    "LLM"
+    "Name"
   ],
   "api": "1",
-  "source-url": "git://github.com/librasteve/raku-Contact-Name-LLM.git"
+  "source-url": "git://github.com/librasteve/raku-Contact-Name.git"
 }
