@@ -1,16 +1,10 @@
-use LLM::Functions;
-use LLM::Prompts;
-use Text::SubParsers;
+use Text::CSV;
 use JSON::Fast;
 use Data::Dump::Tree;
-use Text::CSV;
 use Net::Google::Sheets;
+use Contact::Name;
 
 my $name = 'reading-c2e-v2';
-my $email = 'Email';
-my $full = 'Full name';
-my $first = 'First name';
-my $last = 'Last name';
 
 #my $goal = 'upload';
 #my $goal = 'clear';
@@ -54,15 +48,34 @@ given $goal {
 
         my %col = @values[0;*] Z=> ^Inf;
 
-        my @data = @values[*;%col{$email}][1..*];
+        my $num;
+        for %col.kv -> $key, $val { $num = $val if $key ~~ m:i/email/ }
+
+        my @data = @values[*;$num];
+        @data .= splice(1);
 
         for @data -> $datum is rw {
-            $datum ~~ s:g/'(' .* ')'//;       #rm anything in parens
-            $datum ~~ s:g/^ (.*?) '@' .* $/$0/;     #take lhs fo email
+            $datum ~~ s:g/'(' .* ')'//;             #rm anything in parens
+            $datum ~~ s:g/^ (.*?) '@' .* $/$0/;     #take lhs of email address
         }
 
+        my $n = Name.new;
 
-        say @data;
+
+        say +@data;
+
+        my @res = $n.parse: @data.head(20);
+        say @res;
+        say +@res;
+
+#        say $n.about;
+#        say +$n.dict;
+#        say $n.parse: 'Joel';
+#        say $n.parse: 'Ann';
+#        say $n.parse: 'Rob.toms';
+#        say $n.parse: 'John-Paul';
+#        say $n.parse: ['xxx', 'Ann'];
+#        say $n.dict;
 
 
     }

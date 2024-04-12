@@ -13,7 +13,9 @@
   "provides": {
     "Contact::Name": "lib/Contact/Name.rakumod"
   },
-  "resources": [],
+  "resources": [
+    "Scotland-2007.csv"
+  ],
   "license": "Artistic-2.0",
   "tags": [
     "Contact",
