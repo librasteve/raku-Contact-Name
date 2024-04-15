@@ -4,6 +4,8 @@ class Name {
     my $ract = '.ract-config';
     my $file = 'Scotland-2007.csv';
 
+    my @dict;
+
     has @.data;
     has Bag $.boys;
     has Bag $.girls;
@@ -23,13 +25,19 @@ class Name {
             |$!boys.keys,
             |$!girls.keys,
         ).map: { .subst( /'-'/, "\-" ) }
+
+        @dict = @!dict;
     }
 
-    multi method parse(Str $s) {
-        my @dict := @!dict;
-        my $res = $s ~~ m:i/^@dict/;
+    multi method parse(Str $str) {
+        #iamerejh ... if none, look for xxx.yyy, xxx-yyy pattern instead
+        return 'none' if $str.chars < 3;
 
-        $res ?? ~$res.tc !! 'none'
+        my $res = $str ~~ m:i/^@dict/;
+
+        return 'none' if $res.chars < 3;
+
+        $res ?? ~$res.tclc !! 'none'
     }
 
     multi method parse(@a) {
