@@ -1,10 +1,11 @@
 use Text::CSV;
 
 class Name {
-    my $ract = '.ract-config';
-    my $file = 'Scotland-2007.csv';
+    my $ract   = '.ract-config';
+    my $main   = 'Scotland-2007.csv';
+    my $extras = 'Extras.csv';
 
-    my @dict;
+    my @dict;      #need a lexical cp for regex interpolation
 
     has @.data;
     has Bag $.boys;
@@ -12,11 +13,12 @@ class Name {
 
     has @.dict;
     has $.about;
+    has $.fail = 'none';
 
     submethod TWEAK {
-        my @all = csv(in => "$*HOME/$ract/$file");
-        @!data  = @all.splice(4);
-        $!about = @all.first;
+        my @main = csv(in => "$*HOME/$ract/$main");
+        @!data  = @main.splice(4);
+        $!about = @main.first;
 
         $!boys  = (@!data[*;0] Z=> @!data[*;1]).Bag;
         $!girls = (@!data[*;3] Z=> @!data[*;4]).Bag;
@@ -26,22 +28,55 @@ class Name {
             |$!girls.keys,
         ).map: { .subst( /'-'/, "\-" ) }
 
-        @dict = @!dict;
+        @!dict.append: csv(in => "$*HOME/$ract/$extras");
+
+        @dict := @!dict;
     }
 
-    multi method parse(Str $str) {
-        #iamerejh ... if none, look for xxx.yyy, xxx-yyy pattern instead
-        return 'none' if $str.chars < 3;
+    multi method parse(Str() $str) {
 
-        my $res = $str ~~ m:i/^@dict/;
+        #| dot means <[.-_]>
+        sub try-dot( $str ) {
+            if $str ~~ /(<-[.-]>*) <[.-]>/ {
+                if $0.chars >= 3 {
+                    $0.tclc;
+                }
+            }
+        }
 
-        return 'none' if $res.chars < 3;
+        my Str() $res;
+        print '.';
 
-        $res ?? ~$res.tclc !! 'none'
+        #| guards with early exit
+        given $str {
+            when .chars < 3 {
+                return $.fail;
+            }
+            default {
+                $res = $str ~~ m:i/^@dict/;
+            }
+        }
+
+        #| last chance fix with try-dot
+        given $res {
+            when .chars < 3 {
+                $str.&try-dot // $.fail;
+            }
+            when 'False' {
+                $str.&try-dot // $.fail;
+            }
+            default {
+                $res.tclc;
+            }
+        }
     }
 
     multi method parse(@a) {
         @a.map: { samewith($_) }
+    }
+
+    multi method parse(:email, @a) {
+        @a.map({.subst})
     }
 }
 

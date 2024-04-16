@@ -14,7 +14,8 @@
     "Contact::Name": "lib/Contact/Name.rakumod"
   },
   "resources": [
-    "Scotland-2007.csv"
+    "Scotland-2007.csv",
+    "Extras.csv"
   ],
   "license": "Artistic-2.0",
   "tags": [

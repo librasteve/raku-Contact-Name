@@ -6,15 +6,14 @@ use Data::Dump::Tree;
 use Net::Google::Sheets;
 use Contact::Name;
 
+my @goals = <upload clear list get extract convert check>;
+my $goal = @goals[5];
 my $limit = Inf;
 
 my $name = 'reading-c2e-v2';
 my $range = 'Sheet2';
 my $email = 0;
 my $first = 2;
-
-my @goals = <upload clear list get extract convert check>;
-my $goal = @goals[5];
 
 my $session = Session.new;
 #$session.check-token;
@@ -36,14 +35,13 @@ sub extract( @values ) {
     $n.parse: @data[1..^$limit];
 
     # some test ideas
-    #        say $n.about;
-    #        say +$n.dict;
+
     #        say $n.parse: 'Joel';
     #        say $n.parse: 'Ann';
     #        say $n.parse: 'Rob.toms';
     #        say $n.parse: 'John-Paul';
     #        say $n.parse: ['xxx', 'Ann'];
-    #        say $n.dict;
+
 }
 
 my @values;
@@ -77,9 +75,10 @@ given $goal {
         $active.values: @data;
     }
     when 'check' {
+        my $needle = 'nuno';
         my $n = Name.new;
-        say $n.dict.grep: { m:i/^i/ };
-        say $n.parse: 'ifno';
+        say $n.dict.grep: { m:i/$needle/ };
+        say $n.parse: $needle;
     }
 }
 
