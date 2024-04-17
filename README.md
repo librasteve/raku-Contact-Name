@@ -12,7 +12,7 @@ It uses two techniques:
 
 This seems to work reasonably effectively on a sample of emails.
 
-There is an addendum file (/resources/Extras.csv) with names and short forms that are not present. Please do feel free to propose PRs with any additions to that file - and to for any other features and improvements that you would like.
+There is an addendum file (/resources/Extras.csv) with names and short forms that are not present in the base dictionary. Please do feel free to propose PRs with any additions to that file - and to for any other features and improvements that you would like.
 
 ```perl6
 my $n = Name.new;
