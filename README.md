@@ -4,13 +4,15 @@
 
 ## Synopsis
 
-This module takes a Str (or an Array of Str) and tries to extract to a valid English first name.
+This module takes a Str (or an Array of Str) and tries to extract a valid English first name.
 
 It uses two techniques:
 1. It matches the start of each Str to a dictionary (based on Scotland 2007 birth registrations).
 2. Failing that if takes the text to the left of the first "dot" character such as <[.-_]>.
 
 This seems to work reasonably effectively on a sample of emails.
+
+There is an addendum file (/resources/Extras.csv) with names and short forms that are not present. Please do feel free to propose PRs with any additions to that file - and to for any other features and improvements that you would like.
 
 ```perl6
 my $n = Name.new;
