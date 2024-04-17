@@ -8,7 +8,11 @@
   ],
   "auth": "zef:librasteve",
   "depends": [],
-  "build-depends": [],
+  "build-depends": [
+    "Text::CSV",
+    "JSON::Fast",
+    "Net::Google::Sheets"
+  ],
   "test-depends": [],
   "provides": {
     "Contact::Name": "lib/Contact/Name.rakumod"
