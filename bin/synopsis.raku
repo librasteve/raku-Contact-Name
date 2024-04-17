@@ -7,8 +7,8 @@ use Net::Google::Sheets;
 use Contact::Name;
 
 my @goals = <upload clear list get extract convert check>;
-my $goal = @goals[5];
-my $limit = Inf;
+my $goal = @goals[2];
+my $limit = 10;
 
 my $name = 'reading-c2e-v2';
 my $range = 'Sheet2';
@@ -20,60 +20,52 @@ my $session = Session.new;
 my %list = $session.sheets;
 my $id = %list{$name};
 
-my $active = Sheet.new(:$session, :$id, :$range );
+my $sheet = Sheet.new(:$session, :$id, :$range);
 
 sub extract( @values ) {
 
-    my @data = @values[*;$email];
-
-    for @data[1..*] -> $datum is rw {
-        $datum ~~ s:g/'(' .* ')'//;             #rm anything in parens
-        $datum ~~ s:g/^ (.*?) '@' .* $/$0/;     #take lhs of email address
-    }
+    my @column = @values[*;$email];
+    @column.shift;
 
     my $n = Name.new;
-    $n.parse: @data[1..^$limit];
-
-    # some test ideas
-
-    #        say $n.parse: 'Joel';
-    #        say $n.parse: 'Ann';
-    #        say $n.parse: 'Rob.toms';
-    #        say $n.parse: 'John-Paul';
-    #        say $n.parse: ['xxx', 'Ann'];
-
+    $n.parse( @column[^$limit], :email );
 }
 
-my @values;
-
 given $goal {
+
     when 'list' {
         %list.keys.sort.map(*.say);
     }
+
     when 'upload' {
         my $in = "$*HOME/Downloads/$name.csv";
 
         my @data = csv(:$in).Array;
-        $active.values: @data;
+        $sheet.values: @data;
     }
+
     when 'clear' {
-        $active.clear;
+        $sheet.clear;
     }
+
     when 'get' {
-        @values = $active.values;
+        $sheet.values.head(5).say;
     }
+
     when 'extract' {
-        my @data = $active.values;
+        my @data = $sheet.values;
         @data.&extract.say;
     }
+
     when 'convert' {
-        my @data = $active.values;
+        my @data = $sheet.values;
 
         my $old-hdr = @data[0;$first];
         @data[*;$first] = [$old-hdr, |@data.&extract];
 
-        $active.values: @data;
+        $sheet.values: @data;
     }
+
     when 'check' {
         my $needle = 'nuno';
         my $n = Name.new;

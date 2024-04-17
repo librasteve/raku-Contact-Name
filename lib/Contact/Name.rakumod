@@ -37,7 +37,8 @@ class Name {
 
         #| dot means <[.-_]>
         sub try-dot( $str ) {
-            if $str ~~ /(<-[.-]>*) <[.-]>/ {
+            if $str ~~ /(.+?) <[.-]>/ {
+#            if $str ~~ /(<-[.-]>*) <[.-]>/ {
                 if $0.chars >= 3 {
                     $0.tclc;
                 }
@@ -72,11 +73,15 @@ class Name {
     }
 
     multi method parse(@a) {
+
         @a.map: { samewith($_) }
     }
 
-    multi method parse(:email, @a) {
-        @a.map({.subst})
+    multi method parse(@a, :$email! where .so ) {
+
+        my @b = @a.map: { /(.+?) \@/; $0 };
+
+        @b.map: { samewith($_) }
     }
 }
 
