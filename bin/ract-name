@@ -1,0 +1,134 @@
+#!/usr/bin/env raku
+use v6.d;
+
+use Text::CSV;
+use JSON::Fast;
+use Data::Dump::Tree;
+use Net::Google::Sheets;
+use Contact::Name;
+
+enum Command <set upload clear list get extract convert check>;
+
+sub MAIN(
+    Command $cmd,                           #= One of set upload clear list get extract convert check
+    Str    :$sname,                         #= Active Google Sheet name (from list)
+    Str    :$range,                         #= Active Google Sheet range (e.g. 'Sheet2')
+    Str    :$needle,                        #= Item to check (e.g. 'Joe')
+    Int    :$email,                         #= Column number of emails (input)
+    Int    :$first,                         #= Column number of first names (output)
+    Real   :$l = Inf,                       #= Limit the data processed
+    Bool   :$q,                             #= Quiet mode (suppress cmd echo)
+         ) {
+    say $cmd unless $q;
+
+    class Focus {
+        has $.sname;
+        has $.range;
+        has $.email;
+        has $.first;
+
+        has $.session;
+        has %.list;
+        has $.id;
+
+        has $.sheet;
+
+        submethod persist {
+            my $file = './.ract-temp';
+            spurt $file, "Nil,Nil,Nil,Nil" unless $file.IO.e;     # first pass
+
+            my @saved = './.ract-temp'.IO.slurp.chomp.split(',');
+
+            $!sname //= @saved[0];
+            $!range //= @saved[1];
+            $!email //= @saved[2];
+            $!first //= @saved[3];
+
+            spurt './.ract-temp', "$!sname,$!range,$!email,$!first"; # remember last one
+        }
+
+        submethod TWEAK {
+            self.persist;
+
+            die '--sname is required' unless $!sname ne 'Nil';
+            die '--range is required' unless $!range ne 'Nil';
+
+            $!session = Session.new;
+            %!list = $!session.sheets;
+
+            die '--sname is not in list' unless $!sname ∈ %!list.keys.Set;
+
+            $!id = %!list{$!sname};
+
+            $!sheet = Sheet.new(:$!session, :$!id, :$!range);
+        }
+    }
+
+    sub extract( @values, :$f ) {
+
+        my @column = @values[*;$f.email];
+        @column.shift;
+
+        my $n = Name.new;
+        $n.parse( @column[^$l], :email, :dotty(!$q) );
+
+    }
+
+    my $f = Focus.new: :$sname, :$range, :$email, :$first;
+
+    given $cmd {
+
+        when 'set' {
+            #noop
+        }
+
+        when 'list' {
+            $f.list.keys.sort.map(*.say);
+        }
+
+        when 'upload' {
+            say "from ~/Downloads/{$f.sname}.csv to sheet {$f.sname}, range {$f.range}";
+
+            my $in = "$*HOME/Downloads/{$f.sname}.csv";
+
+            my @data = csv(:$in).Array;
+            $f.sheet.values: @data;
+        }
+
+        when 'clear' {
+            $f.sheet.clear;
+        }
+
+        when 'get' {
+            $f.sheet.values.head($l).say;
+        }
+
+        when 'extract' {
+            die '--email is required' unless $f.email ~~ Int:D;
+
+            my @data = $f.sheet.values;
+            @data.&extract(:$f).say;
+        }
+
+        when 'convert' {
+            die '--email is required' unless $f.email ~~ Int:D;
+            die '--first is required' unless $f.first ~~ Int:D;
+
+            my @data = $f.sheet.values;
+
+            my $old-hdr = @data[0;$f.first];
+            @data[*;$f.first] = [$old-hdr, |@data.&extract(:$f)];
+
+            $f.sheet.values: @data;
+        }
+
+        when 'check' {
+            die '--needle is required' unless $needle;
+
+            my $n = Name.new;
+            say $n.dict.grep: { m:i/$needle/ };
+            say $n.parse: $needle;
+        }
+    }
+}
+
