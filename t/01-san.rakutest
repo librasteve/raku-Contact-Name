@@ -1,0 +1,20 @@
+#!/usr/bin/env raku
+#t/01.san.rakutest
+#TESTALL$ prove6 ./t      [from parent]
+
+use v6.d;
+use Test;
+
+plan 5;
+
+use Contact::Name;
+
+my $n = Name.new;
+
+is $n.parse('Joel'), 'Joel',                            'many-ltm';
+is $n.parse('Ann'),  'Ann',                             'short-ok';
+is $n.parse('Xxx.toms'), 'Xxx',                         'try-dot';
+is $n.parse('John-Paul'),'John-paul',                   'hyphens';
+is $n.parse(['xxx', 'Ann'], :!dotty), ('none', 'Ann'),  'array';
+
+#done-testing;

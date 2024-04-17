@@ -33,12 +33,11 @@ class Name {
         @dict := @!dict;
     }
 
-    multi method parse(Str() $str) {
+    multi method parse( Str() $str, :$dotty ) {
 
-        #| dot means <[.-_]>
+        #| get lhs of any "dot" char, such as <[.-_]>
         sub try-dot( $str ) {
             if $str ~~ /(.+?) <[.-]>/ {
-#            if $str ~~ /(<-[.-]>*) <[.-]>/ {
                 if $0.chars >= 3 {
                     $0.tclc;
                 }
@@ -46,7 +45,7 @@ class Name {
         }
 
         my Str() $res;
-        print '.';
+        print '.' if $dotty;
 
         #| guards with early exit
         given $str {
@@ -63,7 +62,7 @@ class Name {
             when .chars < 3 {
                 $str.&try-dot // $.fail;
             }
-            when 'False' {
+            when 'False' {   #we have coerced False to Str
                 $str.&try-dot // $.fail;
             }
             default {
@@ -72,16 +71,16 @@ class Name {
         }
     }
 
-    multi method parse(@a) {
+    multi method parse( @a, :$dotty = True ) {
 
-        @a.map: { samewith($_) }
+        @a.map: { samewith($_, :$dotty) }
     }
 
-    multi method parse(@a, :$email! where .so ) {
+    multi method parse( @a, :$email! where .so, :$dotty = True ) {
 
         my @b = @a.map: { /(.+?) \@/; $0 };
 
-        @b.map: { samewith($_) }
+        @b.map: { samewith($_, :$dotty) }
     }
 }
 
