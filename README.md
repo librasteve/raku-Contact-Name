@@ -7,8 +7,8 @@
 This module takes a Str (or an Array of Str) and tries to extract a valid English first name.
 
 It uses two techniques:
-1. It matches the start of each Str to a dictionary (based on Scotland 2007 birth registrations).
-2. Failing that if takes the text to the left of the first "dot" character such as <[.-_]>.
+1. It matches the start of each Str to a dictionary (based on Scotland-2007 birth registrations).
+2. Failing that it takes the text to the left of the first "dot" character such as <[.-_]>.
 
 This seems to work reasonably effectively on a sample of emails.
 
